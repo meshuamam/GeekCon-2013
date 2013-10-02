@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace GeekCon
 {
+    /// <summary>
+    /// This is a sample project
+    /// </summary>
     class Program
     {
         static void Main(string[] args)
