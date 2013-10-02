@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace GeekCon
 {
     /// <summary>
-    /// This is a sample project
+    /// This is a sample project for GeekCon
     /// </summary>
     class Program
     {
