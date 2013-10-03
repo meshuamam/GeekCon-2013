@@ -19,6 +19,22 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
+    
+    
+    <RelativeLayout android:id="@+id/ballCanvasLayout"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent">
+        
+    </RelativeLayout>
+    
+    <RelativeLayout android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:background="@drawable/ball_border"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"/>
+    
     <TextView
         android:id="@+id/lostReason"
         android:layout_width="wrap_content"
@@ -64,6 +80,7 @@
         android:textSize="100sp"
         android:text="1"
         android:visibility="gone"/>
+   
 
     <LinearLayout
         android:id="@+id/warningLayout"
@@ -161,55 +178,5 @@
         android:layout_alignTop="@id/zCaption"
         android:layout_toRightOf="@id/xCaption"
         android:text="Z Value" />
-
-    <TextView
-        android:id="@+id/TextView01"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:text="X Value" />
-
-    <TextView
-        android:id="@+id/TextView02"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:text="X Value" />
-
-    <TextView
-        android:id="@+id/xRotLbl"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/yValue"
-        android:layout_toRightOf="@+id/timer"
-        android:text="X Gravity:" />
-
-    <TextView
-        android:id="@+id/xRotValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/xRotLbl"
-        android:layout_alignBottom="@+id/xRotLbl"
-        android:layout_toRightOf="@+id/xRotLbl"
-        android:text="X Rot Value" />
-
-    <TextView
-        android:id="@+id/yRotLbl"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/xRotLbl"
-        android:layout_below="@+id/xRotLbl"
-        android:text="Y Gravity:" />
-
-    <TextView
-        android:id="@+id/yRotValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/yRotLbl"
-        android:layout_alignBottom="@+id/yRotLbl"
-        android:layout_alignLeft="@+id/xRotValue"
-        android:text="Y Rot Value" />
 
 </RelativeLayout>
