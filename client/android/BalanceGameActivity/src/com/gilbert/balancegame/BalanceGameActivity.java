@@ -71,10 +71,10 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	private int mIntroTimerSeconds;
 	private Display mDisplay;
 	private WindowManager mWindowManager;
-	
+
 	private float circleRadiusDp;
-	
-	
+	private SimulationView mSimulationView;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -129,7 +129,8 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		View view = findViewById(R.id.ballCanvasLayout);
 		RelativeLayout ballLayout = (RelativeLayout) findViewById(R.id.ballCanvasLayout);
-		ballLayout.addView(new SimulationView(this));
+		mSimulationView = new SimulationView(this);
+		ballLayout.addView(mSimulationView);
 	}
 
 	@Override
@@ -224,6 +225,9 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		mWarningCount = 0;
 		mPreviousCheatingTime = 0;
 		mIntroTimerSeconds = 0;
+		mSensorX = 0;
+		mSensorY = 0;
+		mSimulationView.onRestartClicked();
 		findViewById(R.id.warning_1).setVisibility(View.GONE);
 		findViewById(R.id.warning_2).setVisibility(View.GONE);
 		findViewById(R.id.warning_3).setVisibility(View.GONE);
@@ -405,12 +409,14 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		private Bitmap mWood;
 		private float mXOrigin;
 		private float mYOrigin;
+		private int mViewHeight;
+		private int mViewWidth;
 		
 		private long mSensorTimeStamp;
 		private long mCpuTimeStamp;
 		private float mHorizontalBound;
 		private float mVerticalBound;
-		private final ParticleSystem mParticleSystem = new ParticleSystem();
+		private ParticleSystem mParticleSystem = new ParticleSystem();
 
 		/*
 		 * Each of our particle holds its previous and current position, its
@@ -599,12 +605,20 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 			public float getPosY(int i) {
 				return mBalls[i].mPosY;
 			}
+			
+			public void reset()
+			{
+				for (Particle ball : mBalls)
+				{
+					ball.mPosX = 0;
+					ball.mPosY = 0;
+				}
+			}
 		}
 
 		public SimulationView(Context context) {
 			super(context);
-			mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-
+			
 			DisplayMetrics metrics = new DisplayMetrics();
 			getWindowManager().getDefaultDisplay().getMetrics(metrics);
 			mXDpi = metrics.xdpi;
@@ -623,9 +637,20 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 			opts.inPreferredConfig = Bitmap.Config.RGB_565;
 			mWood = BitmapFactory.decodeResource(getResources(), R.drawable.wood, opts);
 		}
+		
+		public void onRestartClicked()
+		{
+			mXOrigin = (mViewWidth - mBitmap.getWidth()) * 0.5f;
+			mYOrigin = (mViewHeight - mBitmap.getHeight()) * 0.5f;
+			mParticleSystem = new ParticleSystem();
+		}
 
 		@Override
 		protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+
+			mViewHeight = h;
+			mViewWidth = w;
+			
 			// compute the origin of the screen relative to the origin of
 			// the bitmap
 			mXOrigin = (w - mBitmap.getWidth()) * 0.5f;
