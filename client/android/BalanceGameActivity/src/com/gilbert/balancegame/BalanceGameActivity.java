@@ -25,6 +25,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.BitmapFactory.Options;
+import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -32,6 +33,7 @@ import android.hardware.SensorManager;
 import android.os.*;
 import android.os.PowerManager.WakeLock;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.*;
@@ -69,7 +71,10 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	private int mIntroTimerSeconds;
 	private Display mDisplay;
 	private WindowManager mWindowManager;
-
+	
+	private float circleRadiusDp;
+	
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -85,7 +90,10 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 		mDisplay = mWindowManager.getDefaultDisplay();
 
-
+		DisplayMetrics metrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(metrics);		
+		circleRadiusDp = 30 + (300 / metrics.density);
+		
 		// Create a bright wake lock
 		mWakeLock = mPowerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, getClass()
 				.getName());
@@ -251,18 +259,18 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		xValue.setText(String.format("%.2f", xAcc));
 		yValue.setText(String.format("%.2f", yAcc));
 		zValue.setText(String.format("%.2f", zAcc));
-
-		if (zAcc > 9) {
-			end(LostReason.DROPPED);
-			return;
-		} else if (yAcc > 2 || xAcc > 2 || zAcc > 2) {
-			if (mWarningCount == 5) {
-				end(LostReason.LOST_BALANCE);
-				return;
-			} else {
-				increaseWarning();
-			}
-		}
+//
+//		if (zAcc > 9) {
+//			end(LostReason.DROPPED);
+//			return;
+//		} else if (yAcc > 2 || xAcc > 2 || zAcc > 2) {
+//			if (mWarningCount == 5) {
+//				end(LostReason.LOST_BALANCE);
+//				return;
+//			} else {
+//				increaseWarning();
+//			}
+//		}
 
 		if (Math.abs(mPreviousZAcc - zAcc) < 0.05) {
 			if (mPreviousCheatingTime == 0) {
@@ -662,7 +670,25 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 				final float x = xc + particleSystem.getPosX(i) * xs;
 				final float y = yc - particleSystem.getPosY(i) * ys;
+				
 				canvas.drawBitmap(bitmap, x, y, null);
+				
+				/*
+				 * Calculate the coordinates of the target circle
+				 */
+				double xCircle = Math.pow(x - mXOrigin, 2);
+				double yCircle = Math.pow(y - mYOrigin, 2);
+				double r = Math.pow(circleRadiusDp, 2);
+				
+				if (xCircle + yCircle > r) {
+					
+					if (mWarningCount == 5) {
+						end(LostReason.LOST_BALANCE);
+						return;
+					} else {
+						increaseWarning();
+					}					
+				}
 			}
 
 			// and make sure to redraw asap
