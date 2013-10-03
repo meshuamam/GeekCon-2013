@@ -29,6 +29,12 @@
         
     </RelativeLayout>
     
+    <RelativeLayout android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:background="@drawable/ball_border"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"/>
+    
     <TextView
         android:id="@+id/lostReason"
         android:layout_width="wrap_content"
