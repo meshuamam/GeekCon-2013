@@ -19,6 +19,16 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
+    
+    
+    <RelativeLayout android:id="@+id/ballCanvasLayout"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent">
+        
+    </RelativeLayout>
+    
     <TextView
         android:id="@+id/lostReason"
         android:layout_width="wrap_content"
@@ -64,6 +74,7 @@
         android:textSize="100sp"
         android:text="1"
         android:visibility="gone"/>
+   
 
     <LinearLayout
         android:id="@+id/warningLayout"
