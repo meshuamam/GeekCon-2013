@@ -263,18 +263,22 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		xValue.setText(String.format("%.2f", xAcc));
 		yValue.setText(String.format("%.2f", yAcc));
 		zValue.setText(String.format("%.2f", zAcc));
-//
-//		if (zAcc > 9) {
-//			end(LostReason.DROPPED);
-//			return;
-//		} else if (yAcc > 2 || xAcc > 2 || zAcc > 2) {
-//			if (mWarningCount == 5) {
-//				end(LostReason.LOST_BALANCE);
-//				return;
-//			} else {
-//				increaseWarning();
-//			}
-//		}
+
+		
+		/*
+		 * Obsolete Warning tracking
+		 *  
+		if (zAcc > 9) {
+			end(LostReason.DROPPED);
+			return;
+		} else if (yAcc > 2 || xAcc > 2 || zAcc > 2) {
+			if (mWarningCount == 5) {
+				end(LostReason.LOST_BALANCE);
+				return;
+			} else {
+				increaseWarning();
+			}
+		}*/
 
 		if (Math.abs(mPreviousZAcc - zAcc) < 0.05) {
 			if (mPreviousCheatingTime == 0) {
