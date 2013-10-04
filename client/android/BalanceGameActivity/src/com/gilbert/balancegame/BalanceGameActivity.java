@@ -507,7 +507,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 				// make each particle a bit different by randomizing its
 				// coefficient of friction
 				final float r = ((float) Math.random() - 0.5f) * 0.2f;
-				mOneMinusFriction = 1.0f - sFriction + r;
+				mOneMinusFriction = 0.6f - sFriction + r;
 			}
 
 			public void computePhysics(float sx, float sy, float dT, float dTC) {
