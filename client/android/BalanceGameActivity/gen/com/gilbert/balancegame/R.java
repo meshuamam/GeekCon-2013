@@ -27,7 +27,6 @@ public final class R {
         public static final int ballCanvasLayout=0x7f050000;
         public static final int buttonsLayout=0x7f050007;
         public static final int chrono=0x7f050005;
-        public static final int doneButton=0x7f05001e;
         public static final int gravityLeftArrowLayout=0x7f050003;
         public static final int gravityRightArrowLayout=0x7f050002;
         public static final int initTimerCaption=0x7f05000b;

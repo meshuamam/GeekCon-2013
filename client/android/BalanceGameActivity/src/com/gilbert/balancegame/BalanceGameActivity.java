@@ -22,16 +22,18 @@ import java.util.*;
 import android.R.bool;
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
+import android.app.*;
+import android.content.*;
+import android.content.IntentFilter.MalformedMimeTypeException;
 import android.graphics.*;
 import android.graphics.BitmapFactory.Options;
 import android.hardware.*;
+import android.nfc.*;
 import android.os.*;
 import android.os.PowerManager.WakeLock;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.*;
@@ -88,6 +90,11 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	private final String appKey = "mfjasFNFXrIKZhxqbkTMAhimmMUNnf46";
 	private int mGameMode;
 	private int mPenalty;
+	private NfcAdapter mAdapter;
+	private PendingIntent mPendingIntent;
+	private IntentFilter[] mFilters;
+	
+	private final byte[] DONE_TAG = new byte[]{-110, 7, 54, 120, 47, 110, 102, 99, 116, 108, 2, 101, 110, 90, 58, 50, 58, 67, 97, 114, 59, 69, 58, 73, 49, 59, 78, 58, 49, 53, 59, 89, 58, 109, 111, 98, 105, 46, 98, 101, 121, 111, 110, 100, 112, 111, 100, 47, 46, 117, 105, 46, 118, 105, 101, 119, 115, 46, 83, 112, 108, 97, 115, 104, 84, 15, 28, 97, 110, 100, 114, 111, 105, 100, 46, 99, 111, 109, 58, 112, 107, 103, 99, 111, 109, 46, 106, 119, 115, 111, 102, 116, 46, 110, 102, 99, 97, 99, 116, 105, 111, 110, 108, 97, 117, 110, 99, 104, 101, 114};
 
 	/** Called when the activity is first created. */
 	@Override
@@ -151,18 +158,12 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 			}
 		});
-
-		findViewById(R.id.doneButton).setOnClickListener(new OnClickListener()
-		{
-
-			@Override
-			public void onClick(View v)
-			{
-				end(FINISHED);
-
-			}
-		});
-
+		
+		mAdapter = NfcAdapter.getDefaultAdapter(this);
+		
+		mPendingIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+		
 		// instantiate our simulation view and set it as the activity's content
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mRotationSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
@@ -219,23 +220,53 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		 * screen or buttons.
 		 */
 		mWakeLock.acquire();
+		
+		if (mAdapter != null) mAdapter.enableForegroundDispatch(this, mPendingIntent, null,
+                null);
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
+		
+		if (mAdapter != null) mAdapter.disableForegroundDispatch(this);
 		/*
 		 * When the activity is paused, we make sure to stop the simulation,
 		 * release our sensor resources and wake locks
 		 */
 
-		// Stop the simulation
-		stopSimulation();
-
 		// and release our wake-lock
 		mWakeLock.release();
 	}
 
+	@Override
+    public void onNewIntent(Intent intent) {
+        Log.i("Foreground dispatch", "Discovered tag with intent: " + intent);
+        Parcelable[] messages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+        
+        if (messages != null && messages.length > 0 && messages[0] instanceof NdefMessage)
+        {
+        	NdefMessage wantedTag = (NdefMessage) messages[0];
+        	if (mIsRunning)
+        	{
+        		if (Arrays.equals(wantedTag.toByteArray(), DONE_TAG))
+        		{
+        			runOnUiThread(new Runnable()
+					{
+						
+						@Override
+						public void run()
+						{
+							end(FINISHED);							
+						}
+					});
+        			
+        		}
+        	}
+        }
+        
+    }
+	
 	public void startSimulation() {
 
 		if (mIntroTimer != null) {
@@ -275,7 +306,6 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 							 * of the acceleration. As an added benefit, we use less power and
 							 * CPU resources.
 							 */
-							findViewById(R.id.doneButton).setVisibility(View.VISIBLE);
 							mIsRunning = true;
 							mSensorManager.registerListener(BalanceGameActivity.this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
 							mSensorManager.registerListener(BalanceGameActivity.this, mRotationSensor, SensorManager.SENSOR_DELAY_GAME);
@@ -294,7 +324,9 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		mIsRunning = false;
 		mSensorManager.unregisterListener(this);
 		mStopWatch.stop();        
-		mIntroTimer.cancel();
+		if (mIntroTimer != null) {
+			mIntroTimer.cancel();
+		}
 		((TextView)BalanceGameActivity.this.findViewById(R.id.initTimerCaption)).setVisibility(View.GONE);
 	}
 
@@ -501,7 +533,6 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		}
 
 		findViewById(R.id.buttonsLayout).setVisibility(View.VISIBLE);
-		findViewById(R.id.doneButton).setVisibility(View.GONE);
 
 		stopSimulation();
 

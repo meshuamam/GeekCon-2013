@@ -301,13 +301,5 @@
         android:layout_alignBottom="@+id/yRotLbl"
         android:layout_alignLeft="@+id/xRotValue"
         android:text="Y Rot Value" />
-    
-    <Button android:id="@+id/doneButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:text="Done!"
-        android:visibility="gone"/>
 
 </RelativeLayout>
