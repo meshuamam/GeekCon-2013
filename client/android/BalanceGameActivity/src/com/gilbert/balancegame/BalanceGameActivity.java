@@ -466,7 +466,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 			if (mPreviousWarningTime == 0 || System.currentTimeMillis() - mPreviousWarningTime > 1000) {
 				mPreviousWarningTime = System.currentTimeMillis();
 
-				mPenalty++;
+				mPenalty += 2;
 
 				TextView penaltyText = (TextView) findViewById(R.id.penalty);
 				penaltyText.setVisibility(View.VISIBLE);
