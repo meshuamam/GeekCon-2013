@@ -36,21 +36,8 @@ import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.*;
 import android.widget.Chronometer.OnChronometerTickListener;
-
-<<<<<<< HEAD
-import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
-import com.microsoft.windowsazure.mobileservices.MobileServiceTable;
-import com.microsoft.windowsazure.mobileservices.ServiceFilter;
-import com.microsoft.windowsazure.mobileservices.NextServiceFilterCallback;
-import com.microsoft.windowsazure.mobileservices.ServiceFilterRequest;
-import com.microsoft.windowsazure.mobileservices.ServiceFilterResponse;
-import com.microsoft.windowsazure.mobileservices.ServiceFilterResponseCallback;
-import com.microsoft.windowsazure.mobileservices.TableOperationCallback;
-import com.microsoft.windowsazure.mobileservices.TableQueryCallback;
-import java.net.MalformedURLException;
-=======
 import com.microsoft.windowsazure.mobileservices.*;
->>>>>>> dc1129a74eb966d27ad7e71c6a81d1ad0396a315
+
 
 /**
  * This is an example of using the accelerometer to integrate the device's
@@ -198,7 +185,6 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	protected void onGravityChange()
 	{
 		mYRotation = 0;
-<<<<<<< HEAD
 		
 		Random rnd = new Random();
 		//mXRotation = 4.9 * (rnd.nextInt(3) - 1); // -1, 0 or 1
@@ -238,29 +224,6 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 			}, 5000);
 		}
  }	
-=======
-
-		RelativeLayout rightArrowLayout = (RelativeLayout) findViewById(R.id.gravityRightArrowLayout);
-		RelativeLayout leftArrowLayout = (RelativeLayout) findViewById(R.id.gravityLeftArrowLayout);
-
-		rightArrowLayout.setVisibility(View.INVISIBLE);
-		leftArrowLayout.setVisibility(View.INVISIBLE);
-
-		if (mXRotation > 0)
-		{
-			leftArrowLayout.setVisibility(View.VISIBLE);
-			rightArrowLayout.setVisibility(View.INVISIBLE);
-		}
-
-		if (mXRotation < 0)
-		{
-			rightArrowLayout.setVisibility(View.VISIBLE);
-			leftArrowLayout.setVisibility(View.INVISIBLE);
-		}
-
-
-	}
->>>>>>> dc1129a74eb966d27ad7e71c6a81d1ad0396a315
 
 	@Override
 	protected void onResume() {
