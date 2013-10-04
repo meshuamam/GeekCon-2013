@@ -179,4 +179,54 @@
         android:layout_toRightOf="@id/xCaption"
         android:text="Z Value" />
 
+    <TextView
+        android:id="@+id/TextView01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="X Value" />
+
+    <TextView
+        android:id="@+id/TextView02"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="X Value" />
+
+    <TextView
+        android:id="@+id/xRotLbl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/yValue"
+        android:layout_toRightOf="@+id/timer"
+        android:text="X Gravity:" />
+
+    <TextView
+        android:id="@+id/xRotValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/xRotLbl"
+        android:layout_alignBottom="@+id/xRotLbl"
+        android:layout_toRightOf="@+id/xRotLbl"
+        android:text="X Rot Value" />
+
+    <TextView
+        android:id="@+id/yRotLbl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/xRotLbl"
+        android:layout_below="@+id/xRotLbl"
+        android:text="Y Gravity:" />
+
+    <TextView
+        android:id="@+id/yRotValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/yRotLbl"
+        android:layout_alignBottom="@+id/yRotLbl"
+        android:layout_alignLeft="@+id/xRotValue"
+        android:text="Y Rot Value" />
+
 </RelativeLayout>

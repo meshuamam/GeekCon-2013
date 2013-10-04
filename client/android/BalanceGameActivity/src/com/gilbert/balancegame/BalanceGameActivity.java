@@ -16,10 +16,12 @@
 
 package com.gilbert.balancegame;
 
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -38,6 +40,16 @@ import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.*;
 import android.widget.Chronometer.OnChronometerTickListener;
+import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
+import com.microsoft.windowsazure.mobileservices.MobileServiceTable;
+import com.microsoft.windowsazure.mobileservices.ServiceFilter;
+import com.microsoft.windowsazure.mobileservices.NextServiceFilterCallback;
+import com.microsoft.windowsazure.mobileservices.ServiceFilterRequest;
+import com.microsoft.windowsazure.mobileservices.ServiceFilterResponse;
+import com.microsoft.windowsazure.mobileservices.ServiceFilterResponseCallback;
+import com.microsoft.windowsazure.mobileservices.TableOperationCallback;
+import com.microsoft.windowsazure.mobileservices.TableQueryCallback;
+import java.net.MalformedURLException;
 
 /**
  * This is an example of using the accelerometer to integrate the device's
@@ -59,6 +71,9 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	private float mSensorX;
 	private float mSensorY;
 	private Sensor mAccelerometer;
+	private Sensor mRotationSensor;
+	private double mXRotation = 0.0;
+	private double mYRotation = 0.0;
 	private long mSensorTimeStamp;
 	private long mCpuTimeStamp;
 	private int mWarningCount;
@@ -74,6 +89,11 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 	private float circleRadiusDp;
 	private SimulationView mSimulationView;
+	private MobileServiceClient mClient;
+	private MobileServiceTable<ScoreRecordItem> mScoreRecordTable;
+	
+	private final String serviceUrl = "https://balance.azure-mobile.net/";
+	private final String appKey = "mfjasFNFXrIKZhxqbkTMAhimmMUNnf46";
 
 	/** Called when the activity is first created. */
 	@Override
@@ -111,6 +131,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 				long countUp = (SystemClock.elapsedRealtime() - arg0.getBase()) / 1000;
 				String asText = (countUp / 60) + ":" + (countUp % 60); 
 				timer.setText(asText);
+				if (countUp % 5 == 0) { onGravityChange(); }
 			}
 		});      
 
@@ -127,10 +148,29 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	
 		// instantiate our simulation view and set it as the activity's content
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		mRotationSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+		try{
+			mClient = new MobileServiceClient(serviceUrl, appKey, this);
+			mScoreRecordTable = mClient.getTable(ScoreRecordItem.class);
+		}
+		catch(MalformedURLException e)
+		{
+			TextView xValue = (TextView) findViewById(R.id.xValue);
+			xValue.setText(String.format("Error!!" + e.getMessage()));
+		}
+
 		View view = findViewById(R.id.ballCanvasLayout);
 		RelativeLayout ballLayout = (RelativeLayout) findViewById(R.id.ballCanvasLayout);
 		mSimulationView = new SimulationView(this);
 		ballLayout.addView(mSimulationView);
+	}
+	
+	protected void onGravityChange()
+	{
+		Random rnd = new Random();
+		mXRotation = 9.81 * (rnd.nextInt(3) - 1); // -1, 0 or 1
+		//mYRotation = 9.81 * (rnd.nextInt(2) - 1); // -1 or 0
+		mYRotation = 0;
 	}
 
 	@Override
@@ -202,6 +242,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 							 * CPU resources.
 							 */
 							mSensorManager.registerListener(BalanceGameActivity.this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
+							mSensorManager.registerListener(BalanceGameActivity.this, mRotationSensor, SensorManager.SENSOR_DELAY_GAME);
 							mStopWatch.setBase(SystemClock.elapsedRealtime());
 							mStopWatch.start();
 						}
@@ -241,28 +282,34 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		if (event.sensor.getType() != Sensor.TYPE_ACCELEROMETER)
-			return;
-		/*
-		 * record the accelerometer data, the event's timestamp as well as
-		 * the current time. The latter is needed so we can calculate the
-		 * "present" time during rendering. In this application, we need to
-		 * take into account how the screen is rotated with respect to the
-		 * sensors (which always return data in a coordinate space aligned
-		 * to with the screen in its native orientation).
-		 */
+		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
+		{
+			/*
+			 * record the accelerometer data, the event's timestamp as well as
+			 * the current time. The latter is needed so we can calculate the
+			 * "present" time during rendering. In this application, we need to
+			 * take into account how the screen is rotated with respect to the
+			 * sensors (which always return data in a coordinate space aligned
+			 * to with the screen in its native orientation).
+			 */
+	
+			TextView xValue = (TextView) findViewById(R.id.xValue);
+			TextView yValue = (TextView) findViewById(R.id.yValue);
+			TextView zValue = (TextView) findViewById(R.id.zValue);
 
-		TextView xValue = (TextView) findViewById(R.id.xValue);
-		TextView yValue = (TextView) findViewById(R.id.yValue);
-		TextView zValue = (TextView) findViewById(R.id.zValue);
+			TextView xRotValue = (TextView) findViewById(R.id.xRotValue);
+			TextView yRotValue = (TextView) findViewById(R.id.yRotValue);
+			
+			double xAcc = Math.abs(event.values[0] + mXRotation);
+			double yAcc = Math.abs(event.values[1] + mYRotation);
+			double zAcc = Math.abs(Math.abs(event.values[2]) - 9.81 + mXRotation + mYRotation);
 
-		double xAcc = Math.abs(event.values[0]);
-		double yAcc = Math.abs(event.values[1]);
-		double zAcc = Math.abs(Math.abs(event.values[2]) - 9.81);
 
 		xValue.setText(String.format("%.2f", xAcc));
 		yValue.setText(String.format("%.2f", yAcc));
 		zValue.setText(String.format("%.2f", zAcc));
+			xRotValue.setText(String.format("%.2f", mXRotation / 9.81));
+			yRotValue.setText(String.format("%.2f", mYRotation / 9.81));
 //
 //		if (zAcc > 9) {
 //			end(LostReason.DROPPED);
@@ -318,6 +365,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 		mSensorTimeStamp = event.timestamp;
 		mCpuTimeStamp = System.nanoTime();
+		}
 	}
 
 	/**
@@ -384,6 +432,25 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		findViewById(R.id.restart).setVisibility(View.VISIBLE);
 
 		stopSimulation();
+		
+		ScoreRecordItem score = new ScoreRecordItem();
+		score.name = "Tesr";
+		score.score = 10;
+		final BalanceGameActivity ctx = this;
+		/*
+		mScoreRecordTable.insert(score, new TableOperationCallback<ScoreRecordItem>() {
+
+			@Override
+			public void onCompleted(ScoreRecordItem entity,
+					Exception exception, ServiceFilterResponse response) {
+				if (exception != null)
+				{
+				(new AlertDialog.Builder(ctx)).setMessage(exception.getMessage()).show();
+				}
+				
+			}
+		});
+		*/
 	}
 
 	@Override
