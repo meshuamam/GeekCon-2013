@@ -180,14 +180,14 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		
 		if (mXRotation > 0)
 		{
-			rightArrowLayout.setVisibility(View.VISIBLE);
-			leftArrowLayout.setVisibility(View.INVISIBLE);
+			leftArrowLayout.setVisibility(View.VISIBLE);
+			rightArrowLayout.setVisibility(View.INVISIBLE);
 		}
 		
 		if (mXRotation < 0)
 		{
-			leftArrowLayout.setVisibility(View.VISIBLE);
-			rightArrowLayout.setVisibility(View.INVISIBLE);
+			rightArrowLayout.setVisibility(View.VISIBLE);
+			leftArrowLayout.setVisibility(View.INVISIBLE);
 		}
 		
 			
