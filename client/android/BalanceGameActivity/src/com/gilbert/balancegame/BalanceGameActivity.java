@@ -20,6 +20,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.R.bool;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -461,7 +462,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		score.name = "Tesr";
 		score.score = 10;
 		final BalanceGameActivity ctx = this;
-		/*
+		
 		mScoreRecordTable.insert(score, new TableOperationCallback<ScoreRecordItem>() {
 
 			@Override
@@ -469,13 +470,18 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 					Exception exception, ServiceFilterResponse response) {
 				if (exception != null)
 				{
+					if (firstError)
+					{
 				(new AlertDialog.Builder(ctx)).setMessage(exception.getMessage()).show();
+				firstError = false;
+					}
 				}
 				
 			}
 		});
-		*/
+		
 	}
+	private Boolean firstError=true;
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -803,7 +809,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 						end(LostReason.LOST_BALANCE);
 						return;
 					} else {
-						//increaseWarning();
+						increaseWarning();
 					}					
 				}
 			}
