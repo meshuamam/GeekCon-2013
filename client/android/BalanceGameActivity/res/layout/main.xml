@@ -35,6 +35,36 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"/>
     
+    <RelativeLayout android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true" 
+        android:layout_marginTop="90dp"
+        android:layout_marginRight="90dp" 
+        android:visibility="invisible">
+         <ImageView
+	        android:id="@+id/imageView1"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:src="@drawable/arrow_right" />
+     
+    </RelativeLayout>
+    
+        <RelativeLayout android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true" 
+        android:layout_marginTop="90dp"
+        android:layout_marginLeft="90dp" 
+        android:visibility="invisible" >
+         <ImageView
+	        android:id="@+id/imageView1"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:src="@drawable/arrow_left" />
+     
+    </RelativeLayout>
+    
     <TextView
         android:id="@+id/lostReason"
         android:layout_width="wrap_content"
