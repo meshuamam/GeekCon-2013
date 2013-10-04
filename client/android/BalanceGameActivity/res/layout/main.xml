@@ -29,6 +29,12 @@
         
     </RelativeLayout>
     
+    <RelativeLayout android:id="@+id/warningBorder"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:background="@drawable/warning_border"
+        android:visibility="gone"/>
+    
     <RelativeLayout android:layout_width="300dp"
         android:layout_height="300dp"
         android:background="@drawable/ball_border"
@@ -114,20 +120,42 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/lostReason"
-        android:layout_above="@+id/restart"
+        android:layout_above="@+id/buttonsLayout"
         android:layout_centerHorizontal="true"
         android:textSize="50sp"
         android:layout_marginTop="70dp" />
+    
+    <TextView android:id="@+id/penalty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/timer"
+        android:layout_alignTop="@id/timer"
+        android:textSize="50sp"
+        android:textColor="#999900"
+        android:visibility="gone" />
 
-    <Button
-        android:id="@+id/restart"
+    <LinearLayout
+        android:id="@+id/buttonsLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:text="Restart"
-        android:textSize="15sp"
-        android:visibility="gone" />
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/restart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Restart Normal Mode"
+            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/restartPenalty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Restart Penalty Mode"
+            android:textSize="15sp" />
+    </LinearLayout>
     
     <TextView android:id="@+id/initTimerCaption"
         android:layout_width="wrap_content"
@@ -285,5 +313,13 @@
         android:layout_alignBottom="@+id/yRotLbl"
         android:layout_alignLeft="@+id/xRotValue"
         android:text="Y Rot Value" />
+    
+    <Button android:id="@+id/doneButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="Done!"
+        android:visibility="gone"/>
 
 </RelativeLayout>
