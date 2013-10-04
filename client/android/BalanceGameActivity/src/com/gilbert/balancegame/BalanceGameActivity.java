@@ -131,7 +131,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 				long countUp = (SystemClock.elapsedRealtime() - arg0.getBase()) / 1000;
 				String asText = (countUp / 60) + ":" + (countUp % 60); 
 				timer.setText(asText);
-				if (countUp % 5 == 0) { onGravityChange(); }
+				if (countUp % 10 == 0) { onGravityChange(); }
 			}
 		});      
 
@@ -168,7 +168,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	protected void onGravityChange()
 	{
 		Random rnd = new Random();
-		mXRotation = 9.81 * (rnd.nextInt(3) - 1); // -1, 0 or 1
+		mXRotation = 4.9 * (rnd.nextInt(3) - 1); // -1, 0 or 1
 		//mYRotation = 9.81 * (rnd.nextInt(2) - 1); // -1 or 0
 		mYRotation = 0;
 		
@@ -328,8 +328,8 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 			xValue.setText(String.format("%.2f", xAcc));
 			yValue.setText(String.format("%.2f", yAcc));
 			zValue.setText(String.format("%.2f", zAcc));
-			xRotValue.setText(String.format("%.2f", mXRotation / 9.81));
-			yRotValue.setText(String.format("%.2f", mYRotation / 9.81));
+			xRotValue.setText(String.format("%.2f", mXRotation));
+			yRotValue.setText(String.format("%.2f", mYRotation));
 
 		
 		/*
@@ -766,7 +766,8 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 			final ParticleSystem particleSystem = mParticleSystem;
 			final long now = mSensorTimeStamp + (System.nanoTime() - mCpuTimeStamp);
-			final float sx = mSensorX;
+			final float sx = (float) (mSensorX - mXRotation);
+			//final float sx = mSensorX - 4.9f;
 			final float sy = mSensorY;
 
 			particleSystem.update(sx, sy, now);
@@ -802,7 +803,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 						end(LostReason.LOST_BALANCE);
 						return;
 					} else {
-						increaseWarning();
+						//increaseWarning();
 					}					
 				}
 			}
