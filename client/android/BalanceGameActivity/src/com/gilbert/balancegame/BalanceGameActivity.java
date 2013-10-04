@@ -19,21 +19,25 @@ package com.gilbert.balancegame;
 import java.net.MalformedURLException;
 import java.util.*;
 
+import android.R.bool;
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.*;
 import android.graphics.BitmapFactory.Options;
 import android.hardware.*;
 import android.os.*;
 import android.os.PowerManager.WakeLock;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.*;
 import android.widget.Chronometer.OnChronometerTickListener;
 
-import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
-import com.microsoft.windowsazure.mobileservices.MobileServiceTable;
+import com.microsoft.windowsazure.mobileservices.*;
 
 /**
  * This is an example of using the accelerometer to integrate the device's
@@ -49,6 +53,7 @@ import com.microsoft.windowsazure.mobileservices.MobileServiceTable;
 
 public class BalanceGameActivity extends Activity implements SensorEventListener {
 
+	protected static final LostReason FINISHED = null;
 	private final int GAME_MODE_PENALTY = 2;
 	private final int GAME_MODE_NORMAL = 1;
 	private SensorManager mSensorManager;
@@ -72,12 +77,13 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	private int mIntroTimerSeconds;
 	private Display mDisplay;
 	private WindowManager mWindowManager;
+	private boolean mIsRunning;
 
 	private float circleRadiusDp;
 	private SimulationView mSimulationView;
 	private MobileServiceClient mClient;
 	private MobileServiceTable<ScoreRecordItem> mScoreRecordTable;
-	
+
 	private final String serviceUrl = "https://balance.azure-mobile.net/";
 	private final String appKey = "mfjasFNFXrIKZhxqbkTMAhimmMUNnf46";
 	private int mGameMode;
@@ -93,21 +99,22 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 		// Get an instance of the PowerManager
 		mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
-		
+
 		// Get an instance of the WindowManager
-        mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+		mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 		mDisplay = mWindowManager.getDefaultDisplay();
 
 		DisplayMetrics metrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);		
 		circleRadiusDp = 30 + (300 / metrics.density);
-		
+
 		// Create a bright wake lock
 		mWakeLock = mPowerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, getClass()
 				.getName());
 
 		mWarningCount = 0;
 		mPreviousCheatingTime = 0;
+		mIsRunning = false;
 
 		mStopWatch = (Chronometer) findViewById(R.id.chrono);
 		mStartTime = SystemClock.elapsedRealtime();
@@ -119,7 +126,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 				long countUp = (SystemClock.elapsedRealtime() - arg0.getBase()) / 1000;
 				String asText = (countUp / 60) + ":" + (countUp % 60); 
 				timer.setText(asText);
-				if (countUp % 5 == 0) { onGravityChange(); }
+				if (countUp % 10 == 0) { onGravityChange(); }
 			}
 		});      
 
@@ -133,18 +140,29 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 			}
 		});
-		
+
 		findViewById(R.id.restartPenalty).setOnClickListener(new OnClickListener()
 		{
-			
+
 			@Override
 			public void onClick(View v)
 			{
 				onRestart(2);
-				
+
 			}
 		});
-	
+
+		findViewById(R.id.doneButton).setOnClickListener(new OnClickListener()
+		{
+
+			@Override
+			public void onClick(View v)
+			{
+				end(FINISHED);
+
+			}
+		});
+
 		// instantiate our simulation view and set it as the activity's content
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mRotationSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
@@ -163,33 +181,33 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		mSimulationView = new SimulationView(this);
 		ballLayout.addView(mSimulationView);
 	}
-	
+
 	protected void onGravityChange()
 	{
 		Random rnd = new Random();
-		mXRotation = 9.81 * (rnd.nextInt(3) - 1); // -1, 0 or 1
+		mXRotation = 4.9 * (rnd.nextInt(3) - 1); // -1, 0 or 1
 		//mYRotation = 9.81 * (rnd.nextInt(2) - 1); // -1 or 0
 		mYRotation = 0;
-		
+
 		RelativeLayout rightArrowLayout = (RelativeLayout) findViewById(R.id.gravityRightArrowLayout);
 		RelativeLayout leftArrowLayout = (RelativeLayout) findViewById(R.id.gravityLeftArrowLayout);
-		
+
 		rightArrowLayout.setVisibility(View.INVISIBLE);
 		leftArrowLayout.setVisibility(View.INVISIBLE);
-		
+
 		if (mXRotation > 0)
-		{
-			rightArrowLayout.setVisibility(View.VISIBLE);
-			leftArrowLayout.setVisibility(View.INVISIBLE);
-		}
-		
-		if (mXRotation < 0)
 		{
 			leftArrowLayout.setVisibility(View.VISIBLE);
 			rightArrowLayout.setVisibility(View.INVISIBLE);
 		}
-		
-			
+
+		if (mXRotation < 0)
+		{
+			rightArrowLayout.setVisibility(View.VISIBLE);
+			leftArrowLayout.setVisibility(View.INVISIBLE);
+		}
+
+
 	}
 
 	@Override
@@ -257,6 +275,8 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 							 * of the acceleration. As an added benefit, we use less power and
 							 * CPU resources.
 							 */
+							findViewById(R.id.doneButton).setVisibility(View.VISIBLE);
+							mIsRunning = true;
 							mSensorManager.registerListener(BalanceGameActivity.this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
 							mSensorManager.registerListener(BalanceGameActivity.this, mRotationSensor, SensorManager.SENSOR_DELAY_GAME);
 							mStopWatch.setBase(SystemClock.elapsedRealtime());
@@ -271,6 +291,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	}
 
 	public void stopSimulation() {
+		mIsRunning = false;
 		mSensorManager.unregisterListener(this);
 		mStopWatch.stop();        
 		mIntroTimer.cancel();
@@ -293,8 +314,8 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		findViewById(R.id.warning_4).setVisibility(View.GONE);
 		findViewById(R.id.warning_5).setVisibility(View.GONE);
 		findViewById(R.id.lostReason).setVisibility(View.INVISIBLE);
-		findViewById(R.id.restart).setVisibility(View.GONE);
-		findViewById(R.id.restartPenalty).setVisibility(View.GONE);
+		findViewById(R.id.buttonsLayout).setVisibility(View.GONE);
+		findViewById(R.id.penalty).setVisibility(View.GONE);
 		mStopWatch.setBase(SystemClock.elapsedRealtime());
 		startSimulation();
 	}
@@ -311,14 +332,14 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 			 * sensors (which always return data in a coordinate space aligned
 			 * to with the screen in its native orientation).
 			 */
-	
+
 			TextView xValue = (TextView) findViewById(R.id.xValue);
 			TextView yValue = (TextView) findViewById(R.id.yValue);
 			TextView zValue = (TextView) findViewById(R.id.zValue);
 
 			TextView xRotValue = (TextView) findViewById(R.id.xRotValue);
 			TextView yRotValue = (TextView) findViewById(R.id.yRotValue);
-			
+
 			double xAcc = Math.abs(event.values[0] + mXRotation);
 			double yAcc = Math.abs(event.values[1] + mYRotation);
 			double zAcc = Math.abs(Math.abs(event.values[2]) - 9.81 + mXRotation + mYRotation);
@@ -327,22 +348,22 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 			xValue.setText(String.format("%.2f", xAcc));
 			yValue.setText(String.format("%.2f", yAcc));
 			zValue.setText(String.format("%.2f", zAcc));
-			xRotValue.setText(String.format("%.2f", mXRotation / 9.81));
-			yRotValue.setText(String.format("%.2f", mYRotation / 9.81));
+			xRotValue.setText(String.format("%.2f", mXRotation));
+			yRotValue.setText(String.format("%.2f", mYRotation));
 
-//			if (mGameMode == GAME_MODE_NORMAL) {
-//				if (zAcc > 9) {
-//					end(LostReason.DROPPED);
-//					return;
-//				} else if (yAcc > 2 || xAcc > 2 || zAcc > 2) {
-//					if (mWarningCount == 5) {
-//						end(LostReason.LOST_BALANCE);
-//						return;
-//					} else {
-//						increaseWarning();
-//					}
-//				}
-//			}
+			//			if (mGameMode == GAME_MODE_NORMAL) {
+			//				if (zAcc > 9) {
+			//					end(LostReason.DROPPED);
+			//					return;
+			//				} else if (yAcc > 2 || xAcc > 2 || zAcc > 2) {
+			//					if (mWarningCount == 5) {
+			//						end(LostReason.LOST_BALANCE);
+			//						return;
+			//					} else {
+			//						increaseWarning();
+			//					}
+			//				}
+			//			}
 
 			if (Math.abs(mPreviousZAcc - zAcc) < 0.05) {
 				if (mPreviousCheatingTime == 0) {
@@ -355,37 +376,37 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 				mPreviousCheatingTime = 0;
 			}
 			mPreviousZAcc = zAcc;
-		
-		/*
-		 * record the accelerometer data, the event's timestamp as well as
-		 * the current time. The latter is needed so we can calculate the
-		 * "present" time during rendering. In this application, we need to
-		 * take into account how the screen is rotated with respect to the
-		 * sensors (which always return data in a coordinate space aligned
-		 * to with the screen in its native orientation).
-		 */
 
-		switch (mDisplay.getRotation()) {
-			case Surface.ROTATION_0:
-				mSensorX = event.values[0];
-				mSensorY = event.values[1];
-				break;
-			case Surface.ROTATION_90:
-				mSensorX = -event.values[1];
-				mSensorY = event.values[0];
-				break;
-			case Surface.ROTATION_180:
-				mSensorX = -event.values[0];
-				mSensorY = -event.values[1];
-				break;
-			case Surface.ROTATION_270:
-				mSensorX = event.values[1];
-				mSensorY = -event.values[0];
-				break;
-		}
+			/*
+			 * record the accelerometer data, the event's timestamp as well as
+			 * the current time. The latter is needed so we can calculate the
+			 * "present" time during rendering. In this application, we need to
+			 * take into account how the screen is rotated with respect to the
+			 * sensors (which always return data in a coordinate space aligned
+			 * to with the screen in its native orientation).
+			 */
 
-		mSensorTimeStamp = event.timestamp;
-		mCpuTimeStamp = System.nanoTime();
+			switch (mDisplay.getRotation()) {
+				case Surface.ROTATION_0:
+					mSensorX = event.values[0];
+					mSensorY = event.values[1];
+					break;
+				case Surface.ROTATION_90:
+					mSensorX = -event.values[1];
+					mSensorY = event.values[0];
+					break;
+				case Surface.ROTATION_180:
+					mSensorX = -event.values[0];
+					mSensorY = -event.values[1];
+					break;
+				case Surface.ROTATION_270:
+					mSensorX = event.values[1];
+					mSensorY = -event.values[0];
+					break;
+			}
+
+			mSensorTimeStamp = event.timestamp;
+			mCpuTimeStamp = System.nanoTime();
 		}
 	}
 
@@ -394,67 +415,69 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	 */
 	private void increaseWarning()
 	{
-		if (mPreviousWarningTime == 0 || System.currentTimeMillis() - mPreviousWarningTime > 1000) {
-			mPreviousWarningTime = System.currentTimeMillis();
-			
-			mPenalty++;
-			
-			TextView penaltyText = (TextView) findViewById(R.id.penalty);
-			penaltyText.setVisibility(View.VISIBLE);
-			penaltyText.setText(String.format("+ %d", mPenalty));
-		} else {
-			return;
-		}
+		if (mIsRunning) {
+			if (mPreviousWarningTime == 0 || System.currentTimeMillis() - mPreviousWarningTime > 1000) {
+				mPreviousWarningTime = System.currentTimeMillis();
 
-		if (mGameMode == GAME_MODE_NORMAL) {
-			View warning = null;
+				mPenalty++;
 
-			switch (mWarningCount) {
-				case 0:
-					warning = findViewById(R.id.warning_1);
-					break;
-
-				case 1:
-					warning = findViewById(R.id.warning_2);
-					break;
-
-				case 2:
-					warning = findViewById(R.id.warning_3);
-					break;
-
-
-				case 3:
-					warning = findViewById(R.id.warning_4);
-					break;
-
-				case 4:
-					warning = findViewById(R.id.warning_5);
-					break;
-
-				default:
-					break;
+				TextView penaltyText = (TextView) findViewById(R.id.penalty);
+				penaltyText.setVisibility(View.VISIBLE);
+				penaltyText.setText(String.format("+ %d", mPenalty));
+			} else {
+				return;
 			}
 
-			if (warning != null) {
-				warning.setVisibility(View.VISIBLE);
-				mWarningCount++;
-			}
-		} else {
-			findViewById(R.id.warningBorder).setVisibility(View.VISIBLE);
-			
-			final Handler handler = new Handler();
-			handler.postDelayed(new Runnable()
-			{
-				
-				@Override
-				public void run()
-				{
-					findViewById(R.id.warningBorder).setVisibility(View.GONE);
-					
+			if (mGameMode == GAME_MODE_NORMAL) {
+				View warning = null;
+
+				switch (mWarningCount) {
+					case 0:
+						warning = findViewById(R.id.warning_1);
+						break;
+
+					case 1:
+						warning = findViewById(R.id.warning_2);
+						break;
+
+					case 2:
+						warning = findViewById(R.id.warning_3);
+						break;
+
+
+					case 3:
+						warning = findViewById(R.id.warning_4);
+						break;
+
+					case 4:
+						warning = findViewById(R.id.warning_5);
+						break;
+
+					default:
+						break;
 				}
-			}, 500);
+
+				if (warning != null) {
+					warning.setVisibility(View.VISIBLE);
+					mWarningCount++;
+				}
+			} else {
+				findViewById(R.id.warningBorder).setVisibility(View.VISIBLE);
+
+				final Handler handler = new Handler();
+				handler.postDelayed(new Runnable()
+				{
+
+					@Override
+					public void run()
+					{
+						findViewById(R.id.warningBorder).setVisibility(View.GONE);
+
+					}
+				}, 500);
+			}
 		}
-		
+
 
 	}
 
@@ -472,16 +495,33 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		} else {
 			lostReasonText.setText("No cheating!!!");
 		}
+		
+		if (reason == FINISHED) {
+			lostReasonText.setVisibility(View.GONE);
+		}
 
-		findViewById(R.id.restart).setVisibility(View.VISIBLE);
+		findViewById(R.id.buttonsLayout).setVisibility(View.VISIBLE);
+		findViewById(R.id.doneButton).setVisibility(View.GONE);
 
 		stopSimulation();
-		
+
 		ScoreRecordItem score = new ScoreRecordItem();
+		
 		score.name = "Tesr";
-		score.score = 10;
+		
+		AccountManager accountManager = AccountManager.get(this);
+	    Account[] accounts = accountManager.getAccounts();
+	    
+	    for (Account account : accounts) {
+			if (account.type.contains("facebook") || account.type.contains("google")) {
+				score.name = account.name;
+				break;
+			}
+		}
+	    
+		score.score = (int) ((SystemClock.elapsedRealtime() - mStopWatch.getBase()) / 1000) + mPenalty;
 		final BalanceGameActivity ctx = this;
-		/*
+
 		mScoreRecordTable.insert(score, new TableOperationCallback<ScoreRecordItem>() {
 
 			@Override
@@ -489,13 +529,18 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 					Exception exception, ServiceFilterResponse response) {
 				if (exception != null)
 				{
-				(new AlertDialog.Builder(ctx)).setMessage(exception.getMessage()).show();
+					if (firstError)
+					{
+						(new AlertDialog.Builder(ctx)).setMessage(exception.getMessage()).show();
+						firstError = false;
+					}
 				}
-				
+
 			}
 		});
-		*/
+
 	}
+	private Boolean firstError=true;
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -522,7 +567,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		private float mYOrigin;
 		private int mViewHeight;
 		private int mViewWidth;
-		
+
 		private long mSensorTimeStamp;
 		private long mCpuTimeStamp;
 		private float mHorizontalBound;
@@ -716,7 +761,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 			public float getPosY(int i) {
 				return mBalls[i].mPosY;
 			}
-			
+
 			public void reset()
 			{
 				for (Particle ball : mBalls)
@@ -729,7 +774,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 		public SimulationView(Context context) {
 			super(context);
-			
+
 			DisplayMetrics metrics = new DisplayMetrics();
 			getWindowManager().getDefaultDisplay().getMetrics(metrics);
 			mXDpi = metrics.xdpi;
@@ -748,7 +793,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 			opts.inPreferredConfig = Bitmap.Config.RGB_565;
 			mWood = BitmapFactory.decodeResource(getResources(), R.drawable.wood, opts);
 		}
-		
+
 		public void onRestartClicked()
 		{
 			mXOrigin = (mViewWidth - mBitmap.getWidth()) * 0.5f;
@@ -761,7 +806,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 			mViewHeight = h;
 			mViewWidth = w;
-			
+
 			// compute the origin of the screen relative to the origin of
 			// the bitmap
 			mXOrigin = (w - mBitmap.getWidth()) * 0.5f;
@@ -786,7 +831,8 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 			final ParticleSystem particleSystem = mParticleSystem;
 			final long now = mSensorTimeStamp + (System.nanoTime() - mCpuTimeStamp);
-			final float sx = mSensorX;
+			final float sx = (float) (mSensorX - mXRotation);
+			//final float sx = mSensorX - 4.9f;
 			final float sy = mSensorY;
 
 			particleSystem.update(sx, sy, now);
@@ -806,18 +852,18 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 				final float x = xc + particleSystem.getPosX(i) * xs;
 				final float y = yc - particleSystem.getPosY(i) * ys;
-				
+
 				canvas.drawBitmap(bitmap, x, y, null);
-				
+
 				/*
 				 * Calculate the coordinates of the target circle
 				 */
 				double xCircle = Math.pow(x - mXOrigin, 2);
 				double yCircle = Math.pow(y - mYOrigin, 2);
 				double r = Math.pow(circleRadiusDp, 2);
-				
+
 				if (xCircle + yCircle > r) {
-					
+
 					if (mWarningCount == 5 && (mGameMode == GAME_MODE_NORMAL)) {
 						end(LostReason.LOST_BALANCE);
 						return;

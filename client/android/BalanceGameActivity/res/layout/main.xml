@@ -48,12 +48,19 @@
         android:layout_alignParentTop="true" 
         android:layout_marginTop="90dp"
         android:layout_marginRight="90dp" 
-        android:visibility="invisible">
-         <ImageView
+        android:visibility="invisible"
+        android:background="@drawable/arrow_right" 
+        android:scaleType="fitXY"
+	    android:adjustViewBounds="true" >
+        
+        <!--  <ImageView
 	        android:id="@+id/imageView1"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:src="@drawable/arrow_right" />
+	        android:src="@drawable/arrow_right" 
+	        android:scaleType="fitXY" 
+	         android:adjustViewBounds="true" />
+	         -->
      
     </RelativeLayout>
     
@@ -64,13 +71,19 @@
         android:layout_alignParentTop="true" 
         android:layout_marginTop="90dp"
         android:layout_marginLeft="90dp" 
-        android:visibility="invisible" >
+        android:visibility="invisible" 
+        android:background="@drawable/arrow_left" 
+        android:scaleType="fitXY"
+	    android:adjustViewBounds="true">
+        <!--  
          <ImageView
 	        android:id="@+id/imageView1"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:src="@drawable/arrow_left" />
-     
+	        android:src="@drawable/arrow_left" 
+	        android:scaleType="fitXY"
+	        android:adjustViewBounds="true" />
+     -->
     </RelativeLayout>
     
     <TextView
@@ -288,5 +301,13 @@
         android:layout_alignBottom="@+id/yRotLbl"
         android:layout_alignLeft="@+id/xRotValue"
         android:text="Y Rot Value" />
+    
+    <Button android:id="@+id/doneButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="Done!"
+        android:visibility="gone"/>
 
 </RelativeLayout>
