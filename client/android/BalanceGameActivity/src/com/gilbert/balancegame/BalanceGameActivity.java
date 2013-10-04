@@ -41,6 +41,7 @@ import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.*;
 import android.widget.Chronometer.OnChronometerTickListener;
+
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 import com.microsoft.windowsazure.mobileservices.MobileServiceTable;
 import com.microsoft.windowsazure.mobileservices.ServiceFilter;
@@ -124,7 +125,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 
 		mStopWatch = (Chronometer) findViewById(R.id.chrono);
 		mStartTime = SystemClock.elapsedRealtime();
-
+		
 		final TextView timer = (TextView) findViewById(R.id.timer);
 		mStopWatch.setOnChronometerTickListener(new OnChronometerTickListener(){
 			@Override
@@ -168,31 +169,46 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	
 	protected void onGravityChange()
 	{
-		Random rnd = new Random();
-		mXRotation = 4.9 * (rnd.nextInt(3) - 1); // -1, 0 or 1
-		//mYRotation = 9.81 * (rnd.nextInt(2) - 1); // -1 or 0
 		mYRotation = 0;
 		
-		RelativeLayout rightArrowLayout = (RelativeLayout) findViewById(R.id.gravityRightArrowLayout);
-		RelativeLayout leftArrowLayout = (RelativeLayout) findViewById(R.id.gravityLeftArrowLayout);
+		Random rnd = new Random();
+		//mXRotation = 4.9 * (rnd.nextInt(3) - 1); // -1, 0 or 1
 		
-		rightArrowLayout.setVisibility(View.INVISIBLE);
-		leftArrowLayout.setVisibility(View.INVISIBLE);
+		final double newXRotation = 4.9 * (rnd.nextInt(3) - 1); // -1, 0 or 1
 		
-		if (mXRotation > 0)
-		{
-			leftArrowLayout.setVisibility(View.VISIBLE);
-			rightArrowLayout.setVisibility(View.INVISIBLE);
-		}
+		if (newXRotation != mXRotation){			
+			final View gravityChangeText = findViewById(R.id.gravitychangePending);
+			gravityChangeText.setVisibility(View.VISIBLE);
 		
-		if (mXRotation < 0)
-		{
-			rightArrowLayout.setVisibility(View.VISIBLE);
-			leftArrowLayout.setVisibility(View.INVISIBLE);
-		}
-		
+			Handler h = new Handler();
+			h.postDelayed(new Runnable() {
+				
+				@Override
+				public void run() {
+					mXRotation = newXRotation;	
 			
-	}
+					gravityChangeText.setVisibility(View.INVISIBLE);
+					RelativeLayout rightArrowLayout = (RelativeLayout) findViewById(R.id.gravityRightArrowLayout);
+					RelativeLayout leftArrowLayout = (RelativeLayout) findViewById(R.id.gravityLeftArrowLayout);
+					
+					rightArrowLayout.setVisibility(View.INVISIBLE);
+					leftArrowLayout.setVisibility(View.INVISIBLE);
+					
+					if (mXRotation > 0)
+					{
+						leftArrowLayout.setVisibility(View.VISIBLE);
+						rightArrowLayout.setVisibility(View.INVISIBLE);
+					}
+					
+					if (mXRotation < 0)
+					{
+						rightArrowLayout.setVisibility(View.VISIBLE);
+						leftArrowLayout.setVisibility(View.INVISIBLE);
+					}
+				}
+			}, 5000);
+		}
+ }	
 
 	@Override
 	protected void onResume() {
