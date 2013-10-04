@@ -16,40 +16,24 @@
 
 package com.gilbert.balancegame;
 
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.net.MalformedURLException;
+import java.util.*;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
+import android.graphics.*;
 import android.graphics.BitmapFactory.Options;
-import android.graphics.Point;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.hardware.*;
 import android.os.*;
 import android.os.PowerManager.WakeLock;
 import android.util.DisplayMetrics;
-import android.util.TypedValue;
 import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.*;
 import android.widget.Chronometer.OnChronometerTickListener;
+
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 import com.microsoft.windowsazure.mobileservices.MobileServiceTable;
-import com.microsoft.windowsazure.mobileservices.ServiceFilter;
-import com.microsoft.windowsazure.mobileservices.NextServiceFilterCallback;
-import com.microsoft.windowsazure.mobileservices.ServiceFilterRequest;
-import com.microsoft.windowsazure.mobileservices.ServiceFilterResponse;
-import com.microsoft.windowsazure.mobileservices.ServiceFilterResponseCallback;
-import com.microsoft.windowsazure.mobileservices.TableOperationCallback;
-import com.microsoft.windowsazure.mobileservices.TableQueryCallback;
-import java.net.MalformedURLException;
 
 /**
  * This is an example of using the accelerometer to integrate the device's
@@ -65,6 +49,8 @@ import java.net.MalformedURLException;
 
 public class BalanceGameActivity extends Activity implements SensorEventListener {
 
+	private final int GAME_MODE_PENALTY = 2;
+	private final int GAME_MODE_NORMAL = 1;
 	private SensorManager mSensorManager;
 	private PowerManager mPowerManager;
 	private WakeLock mWakeLock;
@@ -94,6 +80,8 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	
 	private final String serviceUrl = "https://balance.azure-mobile.net/";
 	private final String appKey = "mfjasFNFXrIKZhxqbkTMAhimmMUNnf46";
+	private int mGameMode;
+	private int mPenalty;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -141,8 +129,19 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 			@Override
 			public void onClick(View v)
 			{
-				onRestart();
+				onRestart(1);
 
+			}
+		});
+		
+		findViewById(R.id.restartPenalty).setOnClickListener(new OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				onRestart(2);
+				
 			}
 		});
 	
@@ -202,9 +201,6 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		 * screen or buttons.
 		 */
 		mWakeLock.acquire();
-
-		// Start the simulation
-		startSimulation();
 	}
 
 	@Override
@@ -281,11 +277,13 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		((TextView)BalanceGameActivity.this.findViewById(R.id.initTimerCaption)).setVisibility(View.GONE);
 	}
 
-	public void onRestart()
+	public void onRestart(int i)
 	{
+		mGameMode = i;
 		mWarningCount = 0;
 		mPreviousCheatingTime = 0;
 		mIntroTimerSeconds = 0;
+		mPenalty = 0;
 		mSensorX = 0;
 		mSensorY = 0;
 		mSimulationView.onRestartClicked();
@@ -296,6 +294,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		findViewById(R.id.warning_5).setVisibility(View.GONE);
 		findViewById(R.id.lostReason).setVisibility(View.INVISIBLE);
 		findViewById(R.id.restart).setVisibility(View.GONE);
+		findViewById(R.id.restartPenalty).setVisibility(View.GONE);
 		mStopWatch.setBase(SystemClock.elapsedRealtime());
 		startSimulation();
 	}
@@ -331,33 +330,31 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 			xRotValue.setText(String.format("%.2f", mXRotation / 9.81));
 			yRotValue.setText(String.format("%.2f", mYRotation / 9.81));
 
-		
-		/*
-		 * Obsolete Warning tracking
-		 *  
-		if (zAcc > 9) {
-			end(LostReason.DROPPED);
-			return;
-		} else if (yAcc > 2 || xAcc > 2 || zAcc > 2) {
-			if (mWarningCount == 5) {
-				end(LostReason.LOST_BALANCE);
-				return;
-			} else {
-				increaseWarning();
-			}
-		}*/
+//			if (mGameMode == GAME_MODE_NORMAL) {
+//				if (zAcc > 9) {
+//					end(LostReason.DROPPED);
+//					return;
+//				} else if (yAcc > 2 || xAcc > 2 || zAcc > 2) {
+//					if (mWarningCount == 5) {
+//						end(LostReason.LOST_BALANCE);
+//						return;
+//					} else {
+//						increaseWarning();
+//					}
+//				}
+//			}
 
-		if (Math.abs(mPreviousZAcc - zAcc) < 0.05) {
-			if (mPreviousCheatingTime == 0) {
-				mPreviousCheatingTime = System.currentTimeMillis();
-			} else if (System.currentTimeMillis() - mPreviousCheatingTime > 1000) {
-				end(LostReason.CHEATED);
-				return;
+			if (Math.abs(mPreviousZAcc - zAcc) < 0.05) {
+				if (mPreviousCheatingTime == 0) {
+					mPreviousCheatingTime = System.currentTimeMillis();
+				} else if (System.currentTimeMillis() - mPreviousCheatingTime > 1000) {
+					end(LostReason.CHEATED);
+					return;
+				}
+			} else {
+				mPreviousCheatingTime = 0;
 			}
-		} else {
-			mPreviousCheatingTime = 0;
-		}
-		mPreviousZAcc = zAcc;
+			mPreviousZAcc = zAcc;
 		
 		/*
 		 * record the accelerometer data, the event's timestamp as well as
@@ -399,42 +396,65 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 	{
 		if (mPreviousWarningTime == 0 || System.currentTimeMillis() - mPreviousWarningTime > 1000) {
 			mPreviousWarningTime = System.currentTimeMillis();
+			
+			mPenalty++;
+			
+			TextView penaltyText = (TextView) findViewById(R.id.penalty);
+			penaltyText.setVisibility(View.VISIBLE);
+			penaltyText.setText(String.format("+ %d", mPenalty));
 		} else {
 			return;
 		}
 
-		View warning = null;
+		if (mGameMode == GAME_MODE_NORMAL) {
+			View warning = null;
 
-		switch (mWarningCount) {
-			case 0:
-				warning = findViewById(R.id.warning_1);
-				break;
+			switch (mWarningCount) {
+				case 0:
+					warning = findViewById(R.id.warning_1);
+					break;
 
-			case 1:
-				warning = findViewById(R.id.warning_2);
-				break;
+				case 1:
+					warning = findViewById(R.id.warning_2);
+					break;
 
-			case 2:
-				warning = findViewById(R.id.warning_3);
-				break;
+				case 2:
+					warning = findViewById(R.id.warning_3);
+					break;
 
 
-			case 3:
-				warning = findViewById(R.id.warning_4);
-				break;
+				case 3:
+					warning = findViewById(R.id.warning_4);
+					break;
 
-			case 4:
-				warning = findViewById(R.id.warning_5);
-				break;
+				case 4:
+					warning = findViewById(R.id.warning_5);
+					break;
 
-			default:
-				break;
+				default:
+					break;
+			}
+
+			if (warning != null) {
+				warning.setVisibility(View.VISIBLE);
+				mWarningCount++;
+			}
+		} else {
+			findViewById(R.id.warningBorder).setVisibility(View.VISIBLE);
+			
+			final Handler handler = new Handler();
+			handler.postDelayed(new Runnable()
+			{
+				
+				@Override
+				public void run()
+				{
+					findViewById(R.id.warningBorder).setVisibility(View.GONE);
+					
+				}
+			}, 500);
 		}
-
-		if (warning != null) {
-			warning.setVisibility(View.VISIBLE);
-			mWarningCount++;
-		}
+		
 
 	}
 
@@ -798,7 +818,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 				
 				if (xCircle + yCircle > r) {
 					
-					if (mWarningCount == 5) {
+					if (mWarningCount == 5 && (mGameMode == GAME_MODE_NORMAL)) {
 						end(LostReason.LOST_BALANCE);
 						return;
 					} else {
