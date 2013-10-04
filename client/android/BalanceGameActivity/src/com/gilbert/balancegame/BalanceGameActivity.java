@@ -131,7 +131,7 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 				long countUp = (SystemClock.elapsedRealtime() - arg0.getBase()) / 1000;
 				String asText = (countUp / 60) + ":" + (countUp % 60); 
 				timer.setText(asText);
-				if (countUp % 5 == 0) { onGravityChange(); }
+				if (countUp % 10 == 0) { onGravityChange(); }
 			}
 		});      
 
