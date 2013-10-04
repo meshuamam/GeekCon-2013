@@ -97,7 +97,19 @@
         android:textSize="20sp"
         android:visibility="invisible" />
    
-    
+     
+     <TextView
+        android:id="@+id/gravitychangePending"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Gravity About To Change"
+        android:textSize="20sp"
+        android:textColor="#FF0000"
+        android:visibility="invisible" />
+        
     <Chronometer android:id="@+id/chrono"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
