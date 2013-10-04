@@ -21,31 +21,33 @@ public final class R {
         public static final int wood=0x7f020007;
     }
     public static final class id {
-        public static final int TextView01=0x7f050013;
-        public static final int TextView02=0x7f050014;
+        public static final int TextView01=0x7f050015;
+        public static final int TextView02=0x7f050016;
         public static final int ballCanvasLayout=0x7f050000;
-        public static final int chrono=0x7f050003;
-        public static final int imageView1=0x7f050001;
-        public static final int initTimerCaption=0x7f050006;
-        public static final int lostReason=0x7f050002;
-        public static final int restart=0x7f050005;
-        public static final int timer=0x7f050004;
-        public static final int warningLayout=0x7f050007;
-        public static final int warning_1=0x7f050008;
-        public static final int warning_2=0x7f050009;
-        public static final int warning_3=0x7f05000a;
-        public static final int warning_4=0x7f05000b;
-        public static final int warning_5=0x7f05000c;
-        public static final int xCaption=0x7f05000d;
-        public static final int xRotLbl=0x7f050015;
-        public static final int xRotValue=0x7f050016;
-        public static final int xValue=0x7f050010;
-        public static final int yCaption=0x7f05000e;
-        public static final int yRotLbl=0x7f050017;
-        public static final int yRotValue=0x7f050018;
-        public static final int yValue=0x7f050011;
-        public static final int zCaption=0x7f05000f;
-        public static final int zValue=0x7f050012;
+        public static final int chrono=0x7f050005;
+        public static final int gravityLeftArrowLayout=0x7f050003;
+        public static final int gravityRightArrowLayout=0x7f050001;
+        public static final int imageView1=0x7f050002;
+        public static final int initTimerCaption=0x7f050008;
+        public static final int lostReason=0x7f050004;
+        public static final int restart=0x7f050007;
+        public static final int timer=0x7f050006;
+        public static final int warningLayout=0x7f050009;
+        public static final int warning_1=0x7f05000a;
+        public static final int warning_2=0x7f05000b;
+        public static final int warning_3=0x7f05000c;
+        public static final int warning_4=0x7f05000d;
+        public static final int warning_5=0x7f05000e;
+        public static final int xCaption=0x7f05000f;
+        public static final int xRotLbl=0x7f050017;
+        public static final int xRotValue=0x7f050018;
+        public static final int xValue=0x7f050012;
+        public static final int yCaption=0x7f050010;
+        public static final int yRotLbl=0x7f050019;
+        public static final int yRotValue=0x7f05001a;
+        public static final int yValue=0x7f050013;
+        public static final int zCaption=0x7f050011;
+        public static final int zValue=0x7f050014;
     }
     public static final class layout {
         public static final int main=0x7f030000;

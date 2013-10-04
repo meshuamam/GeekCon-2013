@@ -35,7 +35,8 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"/>
     
-    <RelativeLayout android:layout_width="30dp"
+    <RelativeLayout android:id="@+id/gravityRightArrowLayout"
+        android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true" 
@@ -50,7 +51,8 @@
      
     </RelativeLayout>
     
-        <RelativeLayout android:layout_width="30dp"
+    <RelativeLayout android:id="@+id/gravityLeftArrowLayout" 
+        android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true" 

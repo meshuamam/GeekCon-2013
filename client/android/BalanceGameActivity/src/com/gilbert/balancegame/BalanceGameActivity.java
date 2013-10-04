@@ -171,6 +171,26 @@ public class BalanceGameActivity extends Activity implements SensorEventListener
 		mXRotation = 9.81 * (rnd.nextInt(3) - 1); // -1, 0 or 1
 		//mYRotation = 9.81 * (rnd.nextInt(2) - 1); // -1 or 0
 		mYRotation = 0;
+		
+		RelativeLayout rightArrowLayout = (RelativeLayout) findViewById(R.id.gravityRightArrowLayout);
+		RelativeLayout leftArrowLayout = (RelativeLayout) findViewById(R.id.gravityLeftArrowLayout);
+		
+		rightArrowLayout.setVisibility(View.INVISIBLE);
+		leftArrowLayout.setVisibility(View.INVISIBLE);
+		
+		if (mXRotation > 0)
+		{
+			rightArrowLayout.setVisibility(View.VISIBLE);
+			leftArrowLayout.setVisibility(View.INVISIBLE);
+		}
+		
+		if (mXRotation < 0)
+		{
+			leftArrowLayout.setVisibility(View.VISIBLE);
+			rightArrowLayout.setVisibility(View.INVISIBLE);
+		}
+		
+			
 	}
 
 	@Override
